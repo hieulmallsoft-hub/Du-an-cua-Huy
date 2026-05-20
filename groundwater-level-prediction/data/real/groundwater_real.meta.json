@@ -1,0 +1,9 @@
+{
+  "source": "USGS NWIS Daily Values",
+  "state_cd": "CA",
+  "site_no": "323527117050002",
+  "parameter_cd": "72019",
+  "start_dt": "2018-01-01",
+  "end_dt": "2025-12-31",
+  "rows": 5024
+}
