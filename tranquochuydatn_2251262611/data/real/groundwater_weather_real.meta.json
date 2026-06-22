@@ -1,0 +1,42 @@
+{
+  "dataset": "USGS groundwater joined with NASA POWER daily weather",
+  "rows": 2914,
+  "unique_dates": 2914,
+  "start_dt": "2018-01-01",
+  "end_dt": "2025-12-31",
+  "join": "inner one-to-one join on calendar date",
+  "columns": {
+    "groundwater_level": "USGS depth to water level, feet below land surface",
+    "rainfall_mm": "Precipitation Corrected (mm/day)",
+    "temperature_c": "Temperature at 2 Meters (C)"
+  },
+  "groundwater_source": {
+    "source": "USGS NWIS Daily Values",
+    "source_url": "https://waterservices.usgs.gov/nwis/dv/?format=json&sites=323527117050002&parameterCd=72019&startDT=2018-01-01&endDT=2025-12-31&siteStatus=all",
+    "state_cd": "CA",
+    "site_no": "323527117050002",
+    "station_name": "018S002W22E004S",
+    "latitude": 32.59100556,
+    "longitude": -117.083475,
+    "parameter_cd": "72019",
+    "parameter_name": "Depth to water level, feet below land surface",
+    "statistic_cd": "00002",
+    "statistic_name": "minimum",
+    "start_dt": "2018-01-01",
+    "end_dt": "2025-12-31",
+    "rows": 2914,
+    "unique_dates": 2914
+  },
+  "weather_source": {
+    "source": "NASA POWER Daily API",
+    "source_dataset": "MERRA2",
+    "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=PRECTOTCORR%2CT2M&community=AG&longitude=-117.083475&latitude=32.59100556&start=20180101&end=20251231&format=JSON",
+    "latitude": 32.59100556,
+    "longitude": -117.083475,
+    "parameters": [
+      "PRECTOTCORR",
+      "T2M"
+    ],
+    "time_standard": "LST"
+  }
+}

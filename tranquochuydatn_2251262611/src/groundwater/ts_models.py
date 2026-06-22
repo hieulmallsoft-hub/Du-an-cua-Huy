@@ -94,7 +94,24 @@ def var_forecast(var_fit: VARFit, history: np.ndarray, steps: int) -> np.ndarray
     return var_fit.model.forecast(history[-lag:], steps=steps)
 
 
-def vecm_forecast(vecm_fit: VECMFit, steps: int) -> np.ndarray:
+def vecm_forecast(vecm_fit: VECMFit, steps: int, history: np.ndarray | None = None) -> np.ndarray:
     if steps < 1:
         raise ValueError("steps must be >= 1")
-    return vecm_fit.model.predict(steps=steps)
+    if history is None:
+        return vecm_fit.model.predict(steps=steps)
+
+    values = np.asarray(history, dtype=float)
+    if values.ndim != 2 or values.shape[1] != vecm_fit.model.neqs:
+        raise ValueError("VECM history must be a 2-D matrix with the fitted model columns")
+    if values.shape[0] < vecm_fit.model.k_ar:
+        raise ValueError(f"Need at least {vecm_fit.model.k_ar} rows of history for VECM forecast")
+
+    # statsmodels VECMResults.predict uses y_all only to obtain the last k_ar
+    # observations. Temporarily replace that history so a fitted model can be
+    # evaluated from each rolling origin without refitting or leaking futures.
+    original_y_all = vecm_fit.model.y_all
+    try:
+        vecm_fit.model.y_all = values.T
+        return vecm_fit.model.predict(steps=steps)
+    finally:
+        vecm_fit.model.y_all = original_y_all

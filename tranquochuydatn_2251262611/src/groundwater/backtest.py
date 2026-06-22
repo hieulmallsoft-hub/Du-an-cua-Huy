@@ -61,6 +61,8 @@ def run(args: argparse.Namespace) -> None:
     df = load_series(args.data, date_col=args.date_col, target_col=args.target_col, feature_cols=svc.exogenous_cols)
     values = df[args.target_col].astype(float).to_numpy()
     dates = df[args.date_col].astype(str).to_numpy()
+    endogenous_cols = getattr(svc, "endogenous_cols", [])
+    endog_values = df[endogenous_cols].astype(float).to_numpy() if endogenous_cols else None
 
     horizons = parse_horizons(args.horizons)
     max_h = max(horizons)
@@ -85,7 +87,12 @@ def run(args: argparse.Namespace) -> None:
     rows = []
     for origin in origin_idx:
         history = values[: origin + 1].tolist()
-        model_forecast = svc.forecast(history_levels=history, steps=max_h)
+        endogenous_history = endog_values[: origin + 1] if endog_values is not None else None
+        model_forecast = svc.forecast(
+            history_levels=history,
+            steps=max_h,
+            endogenous_history=endogenous_history,
+        )
         naive_forecast = naive_last_forecast(history, steps=max_h)
         for h in horizons:
             true_idx = origin + h

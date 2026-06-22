@@ -70,8 +70,10 @@ class GroundwaterService:
         self,
         history_levels: Sequence[float] | None,
         exogenous_values: Dict[str, float] | None,
+        endogenous_history: Sequence[Sequence[float]] | None = None,
     ) -> np.ndarray:
-        base = np.array(self.default_endog_history, dtype=float)
+        source = endogenous_history if endogenous_history is not None else self.default_endog_history
+        base = np.array(source, dtype=float)
         if base.ndim != 2 or base.shape[1] != len(self.endogenous_cols):
             raise ValueError("default_endog_history is not compatible with endogenous_cols")
 
@@ -99,6 +101,7 @@ class GroundwaterService:
         self,
         history_levels: Sequence[float] | None = None,
         exogenous_values: Dict[str, float] | None = None,
+        endogenous_history: Sequence[Sequence[float]] | None = None,
     ) -> float:
         history = history_levels if history_levels is not None else self.default_history
         if not history:
@@ -111,14 +114,15 @@ class GroundwaterService:
         if self.model_type == "lstm" and self.lstm_artifact is not None:
             return float(predict_lstm_steps(self.lstm_artifact, np.array(history), steps=1)[0])
         if self.model_type == "var" and self.var_fit is not None:
-            hist = self._build_endog_history(history, exogenous_values)
+            hist = self._build_endog_history(history, exogenous_values, endogenous_history)
             target_idx = self.endogenous_cols.index(self.target_col)
             return float(var_forecast(self.var_fit, hist, steps=1)[0, target_idx])
         if self.model_type == "vecm" and self.vecm_fit is not None:
+            hist = self._build_endog_history(history, exogenous_values, endogenous_history)
             target_idx = self.endogenous_cols.index(self.target_col)
-            return float(vecm_forecast(self.vecm_fit, steps=1)[0, target_idx])
+            return float(vecm_forecast(self.vecm_fit, steps=1, history=hist)[0, target_idx])
         if self.model_type == "hybrid" and self.hybrid_artifact is not None:
-            hist = self._build_endog_history(history, exogenous_values)
+            hist = self._build_endog_history(history, exogenous_values, endogenous_history)
             return float(forecast_hybrid(self.hybrid_artifact, hist, steps=1, target_col=self.target_col)[0])
         if self.model_type == "naive_last_baseline":
             return float(history[-1])
@@ -131,6 +135,7 @@ class GroundwaterService:
         steps: int = 7,
         exogenous_values: Dict[str, float] | None = None,
         exogenous_sequence: List[Dict[str, float]] | None = None,
+        endogenous_history: Sequence[Sequence[float]] | None = None,
     ) -> List[float]:
         if steps < 1:
             raise ValueError("steps must be >= 1")
@@ -152,15 +157,16 @@ class GroundwaterService:
         if self.model_type == "lstm" and self.lstm_artifact is not None:
             return predict_lstm_steps(self.lstm_artifact, np.array(rolling_history), steps=steps)
         if self.model_type == "var" and self.var_fit is not None:
-            hist = self._build_endog_history(rolling_history, exogenous_values)
+            hist = self._build_endog_history(rolling_history, exogenous_values, endogenous_history)
             target_idx = self.endogenous_cols.index(self.target_col)
             fc = var_forecast(self.var_fit, hist, steps=steps)
             return fc[:, target_idx].tolist()
         if self.model_type == "vecm" and self.vecm_fit is not None:
+            hist = self._build_endog_history(rolling_history, exogenous_values, endogenous_history)
             target_idx = self.endogenous_cols.index(self.target_col)
-            return vecm_forecast(self.vecm_fit, steps=steps)[:, target_idx].tolist()
+            return vecm_forecast(self.vecm_fit, steps=steps, history=hist)[:, target_idx].tolist()
         if self.model_type == "hybrid" and self.hybrid_artifact is not None:
-            hist = self._build_endog_history(rolling_history, exogenous_values)
+            hist = self._build_endog_history(rolling_history, exogenous_values, endogenous_history)
             return forecast_hybrid(self.hybrid_artifact, hist, steps=steps, target_col=self.target_col)
         if self.model_type == "naive_last_baseline":
             return [float(rolling_history[-1])] * steps

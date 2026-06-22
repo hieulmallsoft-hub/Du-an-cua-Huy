@@ -10,7 +10,7 @@ from typing import Dict, List
 import numpy as np
 import pandas as pd
 
-from .data import load_series, parse_optional_columns
+from .data import load_adjacent_metadata, load_series, parse_optional_columns
 from .hybrid import HybridArtifact, forecast_hybrid, train_hybrid
 from .lstm_model import LSTMArtifact, predict_lstm_steps, train_lstm
 from .models import evaluate_regression
@@ -206,6 +206,8 @@ def run(args: argparse.Namespace) -> None:
     metrics_payload = {
         "selected_model": selected_model,
         "requested_primary_model": args.primary_model,
+        "source_data": str(args.data),
+        "data_metadata": load_adjacent_metadata(args.data),
         "metrics_by_model": metrics_by_model,
         "config": {
             "test_size": args.test_size,

@@ -1,9 +1,17 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
-from typing import List, Sequence
+from typing import Dict, List, Sequence
 
 import pandas as pd
+
+
+def load_adjacent_metadata(data_path: str | Path) -> Dict:
+    meta_path = Path(data_path).with_suffix(".meta.json")
+    if not meta_path.exists():
+        return {}
+    return json.loads(meta_path.read_text(encoding="utf-8"))
 
 
 def parse_optional_columns(value: str | None) -> List[str]:
@@ -42,4 +50,10 @@ def load_series(
     df = df.dropna(subset=[date_col, target_col]).sort_values(date_col).reset_index(drop=True)
     if extras:
         df = df.dropna(subset=extras).reset_index(drop=True)
+    duplicate_dates = int(df[date_col].duplicated().sum())
+    if duplicate_dates:
+        raise ValueError(
+            f"Data contains {duplicate_dates} duplicate dates in '{date_col}'. "
+            "Use one consistent daily statistic before training."
+        )
     return df

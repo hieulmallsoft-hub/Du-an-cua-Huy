@@ -13,6 +13,8 @@
 - [ ] artifacts/backtest_rmse.png
 - [ ] artifacts/backtest_curve_last_origin.png
 - [ ] artifacts/report.md
+- [ ] data/real/groundwater_weather_real.csv
+- [ ] data/real/groundwater_weather_real.meta.json (link nguon USGS + NASA POWER)
 
 ## 3) Kiem tra demo
 - [ ] powershell -ExecutionPolicy Bypass -File .\scripts\run_api.ps1

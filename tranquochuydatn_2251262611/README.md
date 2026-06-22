@@ -2,6 +2,7 @@
 
 A complete thesis-ready project for groundwater level forecasting with:
 - reproducible public data acquisition
+- real daily rainfall and temperature joined by station coordinates
 - feature engineering for time-series
 - model tuning and benchmark comparison
 - leakage-safe post-train rolling-origin evaluation (multi-horizon)
@@ -23,6 +24,20 @@ A complete thesis-ready project for groundwater level forecasting with:
   - Holdout metrics: MAE, RMSE, MAPE, R2
   - Post-train rolling-origin evaluation for horizons `1,3,7,14`
   - Automatic model selection by holdout RMSE unless a primary model is explicitly requested
+
+## 2.1) Data sources
+- Groundwater: USGS NWIS Daily Values, site `323527117050002`, parameter `72019`
+  (depth to water, feet below land surface), daily minimum statistic `00002`.
+- Rainfall and temperature: NASA POWER Daily API (MERRA-2), parameters
+  `PRECTOTCORR` (mm/day) and `T2M` (deg C), sampled at the USGS site coordinates
+  `32.59100556, -117.083475`.
+- Joined dataset: `data/real/groundwater_weather_real.csv`, one row per date.
+- Exact API URLs and column definitions are stored in
+  `data/real/groundwater_weather_real.meta.json`.
+
+These are first-party public data services, not Kaggle mirrors:
+- USGS Water Services: https://waterservices.usgs.gov/
+- NASA POWER Data Access Viewer: https://power.larc.nasa.gov/data-access-viewer/
 
 ## 3) Project structure
 ```text
@@ -70,7 +85,7 @@ Open:
 - Swagger: `http://127.0.0.1:8000/docs`
 
 ## 5) Step-by-step scripts
-1. Fetch public real data:
+1. Fetch and join public real data:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\fetch_public_data.ps1
 ```
@@ -89,6 +104,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build_report.ps1
 
 ## 6) Key output files for thesis
 - `artifacts/tuned_metrics.json`
+- `artifacts/ablation_univariate/tuned_metrics.json`
 - `artifacts/backtest_metrics.csv`
 - `artifacts/backtest_summary.json`
 - `artifacts/backtest_rmse.png`

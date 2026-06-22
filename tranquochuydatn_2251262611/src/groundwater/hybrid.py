@@ -87,7 +87,7 @@ def forecast_hybrid(
     if artifact.base_type == "var" and artifact.var_fit is not None:
         base_fc = var_forecast(artifact.var_fit, history_matrix, steps=steps)
     elif artifact.base_type == "vecm" and artifact.vecm_fit is not None:
-        base_fc = vecm_forecast(artifact.vecm_fit, steps=steps)
+        base_fc = vecm_forecast(artifact.vecm_fit, steps=steps, history=history_matrix)
     else:
         raise ValueError("Hybrid base model missing")
 
